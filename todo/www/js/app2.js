@@ -72,6 +72,33 @@ angular.module('todo', ['ionic'])
     scope: $scope
   });
 
+    // new task
+  $ionicModal.fromTemplateUrl('task-detail.html', function(modal) {
+    $scope.taskDetailModal = modal;
+  }, {
+    scope: $scope
+  });
+
+//new work
+  $ionicModal.fromTemplateUrl('new-work.html', function(modal) {
+    $scope.newWorkModel = modal;
+  }, {
+    scope: $scope
+  });
+
+  $scope.selectTask = function(task,index){
+    $scope.activeTask = task;
+    $scope.taskDetailModal.show();
+  }
+
+  $scope.backToProject = function(){
+    $scope.taskDetailModal.hide();
+  }
+
+  $scope.addWork = function(){
+    $scope.newWorkModel.show();
+  }
+
   $scope.createTask = function(task) {
     if(!$scope.activeProject || !task) {
       return;
@@ -93,6 +120,28 @@ angular.module('todo', ['ionic'])
 
   $scope.closeNewTask = function() {
     $scope.taskModal.hide();
+  }
+
+  $scope.newWork = function(){
+      $scope.newWorkModel.show();
+  }
+
+  $scope.closeNewWork = function(){
+    $scope.newWorkModel.hide();
+  }
+
+  $scope.createWork = function(work){
+    if(!$scope.activeTask || !work){
+      return;
+    }
+    if(!$scope.activeTask.works){
+      $scope.activeTask.works = [];
+    }
+    $scope.activeTask.works.push(work);
+    $scope.newWorkModel.hide();
+
+    // Inefficient, but save all the projects// Inefficient, but save all the projects
+    Projects.save($scope.projects);
   }
 
   $scope.toggleProjects = function() {

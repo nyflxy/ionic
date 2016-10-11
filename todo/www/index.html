@@ -49,7 +49,7 @@
         </ion-header-bar>
         <ion-content>
           <ion-list>
-            <ion-item ng-repeat="task in activeProject.tasks">
+            <ion-item ng-repeat="task in activeProject.tasks" ng-click="selectTask(task,$index)" ng-class="{active: activeTask == task}">
               {{task.title}}
             </ion-item>
           </ion-list>
@@ -93,6 +93,71 @@
           </div>
           <div class="padding">
             <button type="submit" class="button button-block button-positive">Create Task</button>
+          </div>
+        </form>
+
+      </ion-content>
+
+    </div>
+
+  </script>
+
+  <script id="task-detail.html" type="text/ng-template">
+
+    <div class="modal">
+
+      <!-- Modal header bar -->
+      <ion-header-bar class="bar-secondary">
+        <button class="button button-clear button-positive" ng-click="backToProject()">Back</button>
+        <h1 class="title">{{activeTask.title}}</h1>
+        <button class="button button-clear button-positive" ng-click="newWork()">Add</button>
+      </ion-header-bar>
+
+      <!-- Modal content area -->
+      <ion-content>
+          <ion-list>
+            <ion-item ng-repeat="work in activeTask.works">
+               <h2>{{work.username}}<span style="margin-left:100px;">{{work.date}}</span></h2>
+               <span>时间: {{work.hour}}小时</span>
+               <p>工作内容 : {{work.content}}</p>
+            </ion-item>
+          </ion-list>
+      </ion-content>
+
+    </div>
+
+  </script>
+
+  <script id="new-work.html" type="text/ng-template">
+
+    <div class="modal">
+
+      <!-- Modal header bar -->
+      <ion-header-bar class="bar-secondary">
+        <h1 class="title">New Work</h1>
+        <button class="button button-clear button-positive" ng-click="closeNewWork()">Cancel</button>
+      </ion-header-bar>
+
+      <!-- Modal content area -->
+      <ion-content>
+
+        <form ng-submit="createWork(work)">
+          <div class="list">
+            <label class="item item-input">
+              <input type="text" placeholder="content" ng-model="work.content">
+            </label>
+            <label class="item item-input">
+              <input type="text" placeholder="hour" ng-model="work.hour">
+            </label>
+            <label class="item item-select">
+              <select ng-model="work.username">
+                <option>niyoufa</option>
+                <option>hushulong</option>
+              </select>
+            </label>
+          </div>
+          <div class="padding">
+            <button type="submit" class="button button-block button-positive">Create Work</button>
           </div>
         </form>
 
