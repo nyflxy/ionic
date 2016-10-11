@@ -1,0 +1,7 @@
+
+ionic 环境搭建
+
+1. sudo apt-get install node v0.10.25
+2. sudo apt-get install npm 1.3.10
+3. npm install -g cordova ionic
+4. ionic start myApp tabs
