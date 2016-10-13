@@ -34,6 +34,8 @@ angular.module('todo', ['ionic'])
 
 .controller('TodoCtrl', function($scope, $timeout, $ionicModal, Projects, $ionicSideMenuDelegate,$http) {
 
+  var api_server_address = "http://dszyicang.com:8502";
+
   // A utility function for creating a new project
   // with the given projectTitle
   var createProject = function(projectTitle) {
@@ -46,12 +48,12 @@ angular.module('todo', ['ionic'])
 
   // Load or initialize projects
   $scope.initProject = function(){
-    $http.get("http://127.0.0.1:8500/api/projects")
+    $http.get(api_server_address + "/api/projects")
     .success(function(res){
       projects = res.response.data;
       window.localStorage['projects'] = angular.toJson(projects);
     });
-    $http.get("http://127.0.0.1:8500/api/members")
+    $http.get(api_server_address + "/api/members")
     .success(function(res){
       members = res.response.data;
       window.localStorage['members'] = angular.toJson(members);
