@@ -27,7 +27,7 @@
     <script src="lib/ionic/js/ionic.bundle.js"></script>
 
     <!-- cordova script (this will be a 404 during development) -->
-    <script src="cordova.js"></script>
+    <!--<script src="cordova.js"></script>-->
 
     <!-- your app's js -->
     <script src="js/app2.js"></script>
@@ -43,14 +43,14 @@
           </button>
           <h1 class="title">{{activeProject.title}}</h1>
           <!-- 新增按钮-->
-          <button class="button button-icon" ng-click="newTask()">
-            <i class="icon ion-compose"></i>
-          </button>
+          <!--<button class="button button-icon" ng-click="newTask()">-->
+            <!--<i class="icon ion-compose"></i>-->
+          <!--</button>-->
         </ion-header-bar>
         <ion-content>
           <ion-list>
             <ion-item ng-repeat="task in activeProject.tasks" ng-click="selectTask(task,$index)" ng-class="{active: activeTask == task}">
-              {{task.title}}
+              {{task.name}}
             </ion-item>
           </ion-list>
         </ion-content>
@@ -58,8 +58,8 @@
 
       <ion-side-menu side="left">
         <ion-header-bar class="bar-dark">
-          <h1 class="title">Projects</h1>
-          <button class="button button-icon ion-plus" ng-click="newProject()">
+          <h1 class="title">项目</h1>
+          <button class="button button-icon ion-refresh" ng-click="refreshProjects()">
           </button>
         </ion-header-bar>
         <ion-content scroll="false">
@@ -108,15 +108,15 @@
 
       <!-- Modal header bar -->
       <ion-header-bar class="bar-secondary">
-        <button class="button button-clear button-positive" ng-click="backToProject()">Back</button>
+        <button class="button button-clear button-positive" ng-click="backToProject()">返回</button>
         <h1 class="title">{{activeTask.title}}</h1>
-        <button class="button button-clear button-positive" ng-click="newWork()">Add</button>
+        <!--<button class="button button-clear button-positive" ng-click="newWork()">添加</button>-->
       </ion-header-bar>
 
       <!-- Modal content area -->
       <ion-content>
           <ion-list>
-            <ion-item ng-repeat="work in activeTask.works">
+            <ion-item ng-repeat="work in activeTask.work_list">
                <h2>{{work.username}}<span style="margin-left:100px;">{{work.date}}</span></h2>
                <span>时间: {{work.hour}}小时</span>
                <p>工作内容 : {{work.content}}</p>
@@ -134,8 +134,8 @@
 
       <!-- Modal header bar -->
       <ion-header-bar class="bar-secondary">
-        <h1 class="title">New Work</h1>
-        <button class="button button-clear button-positive" ng-click="closeNewWork()">Cancel</button>
+        <h1 class="title">工作日报</h1>
+        <button class="button button-clear button-positive" ng-click="closeNewWork()">取消</button>
       </ion-header-bar>
 
       <!-- Modal content area -->
@@ -144,20 +144,19 @@
         <form ng-submit="createWork(work)">
           <div class="list">
             <label class="item item-input">
-              <input type="text" placeholder="content" ng-model="work.content">
+              <input type="text" placeholder="工作内容" ng-model="work.content">
             </label>
             <label class="item item-input">
-              <input type="text" placeholder="hour" ng-model="work.hour">
+              <input type="text" placeholder="时间" ng-model="work.hour">
             </label>
             <label class="item item-select">
               <select ng-model="work.username">
-                <option>niyoufa</option>
-                <option>hushulong</option>
+                <option ng-repeat="member in members" value="{{member.id}}:{{member.name}}">{{member.name}}</option>
               </select>
             </label>
           </div>
           <div class="padding">
-            <button type="submit" class="button button-block button-positive">Create Work</button>
+            <button type="submit" class="button button-block button-positive">添加工作日报</button>
           </div>
         </form>
 

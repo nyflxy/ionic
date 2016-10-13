@@ -32,7 +32,7 @@ angular.module('todo', ['ionic'])
   }
 })
 
-.controller('TodoCtrl', function($scope, $timeout, $ionicModal, Projects, $ionicSideMenuDelegate) {
+.controller('TodoCtrl', function($scope, $timeout, $ionicModal, Projects, $ionicSideMenuDelegate,$http) {
 
   // A utility function for creating a new project
   // with the given projectTitle
@@ -45,7 +45,23 @@ angular.module('todo', ['ionic'])
 
 
   // Load or initialize projects
+  $scope.initProject = function(){
+    $http.get("http://127.0.0.1:8500/api/projects")
+    .success(function(res){
+      projects = res.response.data;
+      window.localStorage['projects'] = angular.toJson(projects);
+    });
+    $http.get("http://127.0.0.1:8500/api/members")
+    .success(function(res){
+      members = res.response.data;
+      window.localStorage['members'] = angular.toJson(members);
+    });
+  }
+  $scope.initProject();
   $scope.projects = Projects.all();
+  $scope.members = angular.fromJson(window.localStorage['members']);
+//  $scope.members = [{"name":"niyoufa","id":1}];
+  console.log($scope.members);
 
   // Grab the last active, or the first project
   $scope.activeProject = $scope.projects[Projects.getLastActiveIndex()];
@@ -64,6 +80,11 @@ angular.module('todo', ['ionic'])
     Projects.setLastActiveIndex(index);
     $ionicSideMenuDelegate.toggleLeft(false);
   };
+
+  $scope.refreshProjects = function(){
+    $scope.initProject();
+    $scope.projects = Projects.all();
+  }
 
   // Create our modal
   $ionicModal.fromTemplateUrl('new-task.html', function(modal) {
@@ -128,40 +149,61 @@ angular.module('todo', ['ionic'])
 
   $scope.closeNewWork = function(){
     $scope.newWorkModel.hide();
+    work.content = "";
+    work.hour = "";
+    work.username = "";
+    work.date = "";
   }
 
   $scope.createWork = function(work){
     if(!$scope.activeTask || !work){
       return;
     }
-    if(!$scope.activeTask.works){
-      $scope.activeTask.works = [];
+    if(!$scope.activeTask.work_list){
+      $scope.activeTask.work_list = [];
     }
-    $scope.activeTask.works.push(work);
+    for(var i=0,len=$scope.activeTask.work_list.length;i<len;i++){
+      if(work.username == $scope.activeTask.work_list[i].username){
+        alert("您今天已添加工作日报！");
+        return;
+      }
+    }
+    var content = work.content;
+    var hour = work.hour;
+    var username = work.username.split(":")[1];
+    var date = "今天";
+    $scope.activeTask.work_list.push({
+      "content":work.content,
+      "hour":work.hour,
+      "username":username,
+      "date":date,
+    });
     $scope.newWorkModel.hide();
 
     // Inefficient, but save all the projects// Inefficient, but save all the projects
-    Projects.save($scope.projects);
+    work.content = "";
+    work.hour = "";
+    work.username = "";
+    work.date = "";
   }
 
   $scope.toggleProjects = function() {
     $ionicSideMenuDelegate.toggleLeft();
   };
 
-
   // Try to create the first project, make sure to defer
   // this by using $timeout so everything is initialized
   // properly
-  $timeout(function() {
-    if($scope.projects.length == 0) {
-      while(true) {
-        var projectTitle = prompt('Your first project title:');
-        if(projectTitle) {
-          createProject(projectTitle);
-          break;
-        }
-      }
-    }
-  });
+//  $timeout(function() {
+//    if($scope.projects.length == 0) {
+//      while(true) {
+//        var projectTitle = prompt('Your first project title:');
+//        if(projectTitle) {
+//          createProject(projectTitle);
+//          break;
+//        }
+//      }
+//    }
+//  });
 
 });
