@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
+    <title></title>
+
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="img/workreport.jpg">
+    <!-- un-comment this code to enable service worker
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('service-worker.js')
+          .then(() => console.log('service worker installed'))
+          .catch(err => console.log('Error', err));
+      }
+    </script>-->
+
+    <link href="lib/ionic/css/ionic.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+
+    <!-- IF using Sass (run gulp sass first), then uncomment below and remove the CSS includes above
+    <link href="css/ionic.app.css" rel="stylesheet">
+    -->
+
+    <!-- ionic/angularjs js -->
+    <script src="lib/ionic/js/ionic.bundle.js"></script>
+
+    <!-- cordova script (this will be a 404 during development) -->
+    <!--<script src="cordova.js"></script>-->
+
+    <!-- your app's js -->
+    <script src="js/education.js"></script>
+    <script src="js/controllers.js"></script>
+    <script src="js/services.js"></script>
+  </head>
+  <body ng-app="education" ng-controller="EducationCtrl">
+    <ion-side-menus>
+      <ion-side-menu-content>
+        <ion-header-bar class="bar-dark">
+          <button class="button button-icon" ng-click="toggleProjects()">
+            <i class="icon ion-navicon"></i>
+          </button>
+          <h1 class="title">{{activeProject.title}}</h1>
+          <!-- 新增按钮-->
+          <!--<button class="button button-icon" ng-click="newTask()">-->
+            <!--<i class="icon ion-compose"></i>-->
+          <!--</button>-->
+        </ion-header-bar>
+        <ion-content>
+          <ion-list>
+            <ion-item>
+              <form ng-submit="searchUniversity(keyword)">
+                <input type="text" ng-model="keyword"
+                       class="item item-input" placeholder="输入关键词..."
+                       style="width:80%;border:solid 1px;display:inline;padding-left:10px;border-color:#ECF5F5;">
+                <button type="submit" style="height:34px;margin-left:10px;">查询</button>
+              </form>
+            </ion-item>
+            <ion-refresher pulling-text="下拉刷新" on-refresh="doUniversityRefresh()"></ion-refresher>
+            <ion-item ng-repeat="university in universitys" ng-click="selectTask(university,$index)" ng-class="{active: activeTask == university}">
+              {{university.name}}({{university.city}})
+            </ion-item>
+            <ion-infinite-scroll ng-if="universitys_pager.has_more" on-infinite="loadUniversityMore()" distance="5%"></ion-infinite-scroll>
+          </ion-list>
+        </ion-content>
+      </ion-side-menu-content>
+
+      <ion-side-menu side="left">
+        <ion-header-bar class="bar-dark">
+          <h1 class="title">高等教育</h1>
+          <button class="button button-icon ion-refresh" ng-click="refreshProjects()">
+          </button>
+        </ion-header-bar>
+        <ion-content scroll="false">
+          <ion-list>
+            <ion-item ng-repeat="project in projects" ng-click="selectProject(project, $index)" ng-class="{active: activeProject == project}">
+              {{project.title}}
+            </ion-item>
+          </ion-list>
+        </ion-content>
+      </ion-side-menu>
+  </ion-side-menus>
+
+  <script id="new-task.html" type="text/ng-template">
+
+    <div class="modal">
+
+      <!-- Modal header bar -->
+      <ion-header-bar class="bar-secondary">
+        <h1 class="title">New Task</h1>
+        <button class="button button-clear button-positive" ng-click="closeNewTask()">Cancel</button>
+      </ion-header-bar>
+
+      <!-- Modal content area -->
+      <ion-content>
+
+        <form ng-submit="createTask(task)">
+          <div class="list">
+            <label class="item item-input">
+              <input type="text" placeholder="What do you need to do?" ng-model="task.title">
+            </label>
+          </div>
+          <div class="padding">
+            <button type="submit" class="button button-block button-positive">Create Task</button>
+          </div>
+        </form>
+
+      </ion-content>
+
+    </div>
+
+  </script>
+
+  <script id="task-detail.html" type="text/ng-template">
+
+    <div class="modal">
+
+      <!-- Modal header bar -->
+      <ion-header-bar class="bar-secondary">
+        <button class="button button-clear button-positive" ng-click="backToProject()">返回</button>
+        <h1 class="title">{{activeTask.name}}</h1>
+        <!--<button class="button button-clear button-positive" ng-click="newWork()">添加</button>-->
+      </ion-header-bar>
+
+      <!-- Modal content area -->
+      <ion-content>
+          <ion-item>
+               <img ng-src="http://www.pku.edu.cn/img/news/64006a60c64a18e95ef130.jpg" alt="图片加载异常"
+                    style="width:100%;height:200px;margin-bottom:5px;">
+               <h2>{{activeTask.name}}</h2>
+               <p>类型: {{activeTask.level}}</p>
+               <p>城市: {{activeTask.city}}</p>
+               <p>部门 : {{activeTask.department}}</p>
+          </ion-item>
+          <h5 style="border:solid 1px;border-color:#ddd;margin-top:0px;margin-left:10px;padding:5px;">专业列表</h5>
+      </ion-content>
+
+    </div>
+
+  </script>
+
+  <script id="new-work.html" type="text/ng-template">
+
+    <div class="modal">
+
+      <!-- Modal header bar -->
+      <ion-header-bar class="bar-secondary">
+        <h1 class="title">工作日报</h1>
+        <button class="button button-clear button-positive" ng-click="closeNewWork()">取消</button>
+      </ion-header-bar>
+
+      <!-- Modal content area -->
+      <ion-content>
+
+        <form ng-submit="createWork(work)">
+          <div class="list">
+            <label class="item item-input">
+              <input type="text" placeholder="工作内容" ng-model="work.content">
+            </label>
+            <label class="item item-input">
+              <input type="text" placeholder="时间" ng-model="work.hour">
+            </label>
+            <label class="item item-select">
+              <select ng-model="work.username">
+                <option ng-repeat="member in members" value="{{member.id}}:{{member.name}}">{{member.name}}</option>
+              </select>
+            </label>
+          </div>
+          <div class="padding">
+            <button type="submit" class="button button-block button-positive">添加工作日报</button>
+          </div>
+        </form>
+
+      </ion-content>
+
+    </div>
+
+  </script>
+
+  </body>
+</html>
