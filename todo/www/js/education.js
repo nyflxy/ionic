@@ -56,7 +56,14 @@ angular.module('education', ['ionic'])
 .controller('EducationCtrl', function($scope, $timeout, $ionicModal, Projects,Universitys, $ionicSideMenuDelegate,$http) {
 
   var api_server_address = "http://localhost:8500";
-
+  //格式化字符串
+  String.format = function(src){
+      if (arguments.length == 0) return null;
+      var args = Array.prototype.slice.call(arguments, 1);
+      return src.replace(/\{(\d+)\}/g, function(m, i){
+          return args[i];
+      });
+  };
 
   /*Project function*/
   // A utility function for creating a new project
@@ -76,33 +83,22 @@ angular.module('education', ['ionic'])
         {"title":"专业目录"},
         {"title":"教材信息"},
       ];
-      window.localStorage['projects'] = angular.toJson(projects)
+      window.localStorage['projects'] = angular.toJson(projects);
+      $scope.projects = Projects.all();
+      $scope.activeProject = $scope.projects[Projects.getLastActiveIndex()];
   }
+
   $scope.initProject();
-  $scope.projects = Projects.all();
+  $scope.refreshProjects = function(){
+    $scope.initProject();
+    $scope.toggleProjects(false);
+  }
 
-  // Grab the last active, or the first project
-  $scope.activeProject = $scope.projects[Projects.getLastActiveIndex()];
-
-  // Called to create a new project
-  $scope.newProject = function() {
-    var projectTitle = prompt('Project name');
-    if(projectTitle) {
-      createProject(projectTitle);
-    }
-  };
-
-  // Called to select the given project
   $scope.selectProject = function(project, index) {
     $scope.activeProject = project;
     Projects.setLastActiveIndex(index);
     $ionicSideMenuDelegate.toggleLeft(false);
   };
-
-  $scope.refreshProjects = function(){
-    $scope.initProject();
-    $scope.projects = Projects.all();
-  }
 
   $scope.toggleProjects = function() {
     $ionicSideMenuDelegate.toggleLeft();
@@ -121,6 +117,7 @@ angular.module('education', ['ionic'])
       $scope.universitys_pager = universitys_pager;
     });
   }
+
   $scope.initUniversity();
 
   /*Task function*/
@@ -139,42 +136,11 @@ angular.module('education', ['ionic'])
     $scope.taskDetailModal.hide();
   }
 
-  $scope.createTask = function(task) {
-    if(!$scope.activeProject || !task) {
-      return;
-    }
-    $scope.activeProject.tasks.push({
-      title: task.title
-    });
-    $scope.taskModal.hide();
-
-    // Inefficient, but save all the projects
-    Projects.save($scope.projects);
-
-    task.title = "";
-  };
-
-  $scope.newTask = function() {
-    $scope.taskModal.show();
-  };
-
-  $scope.closeNewTask = function() {
-    $scope.taskModal.hide();
-  }
-
   $scope.doUniversityRefresh = function(){
     $scope.initUniversity();
     $scope.universitys = Universitys.all();
     $scope.$broadcast('scroll.refreshComplete');
   }
-  //格式化字符串
-  String.format = function(src){
-        if (arguments.length == 0) return null;
-        var args = Array.prototype.slice.call(arguments, 1);
-        return src.replace(/\{(\d+)\}/g, function(m, i){
-            return args[i];
-        });
-    };
 
   $scope.loadUniversityMore = function(keyword){
     if(!keyword){
@@ -230,90 +196,11 @@ angular.module('education', ['ionic'])
     }
   }
 
-  /*Work function*/
-  $scope.addWork = function(){
-    $scope.newWorkModel.show();
-  }
-
-  $scope.newWork = function(){
-      $scope.newWorkModel.show();
-  }
-
-  $scope.closeNewWork = function(){
-    $scope.newWorkModel.hide();
-    work.content = "";
-    work.hour = "";
-    work.username = "";
-    work.date = "";
-  }
-
-  $scope.createWork = function(work){
-    if(!$scope.activeTask || !work){
-      return;
-    }
-    if(!$scope.activeTask.work_list){
-      $scope.activeTask.work_list = [];
-    }
-    for(var i=0,len=$scope.activeTask.work_list.length;i<len;i++){
-      if(work.username == $scope.activeTask.work_list[i].username){
-        alert("您今天已添加工作日报！");
-        return;
-      }
-    }
-    var content = work.content;
-    var hour = work.hour;
-    var username = work.username.split(":")[1];
-    var date = "今天";
-    $scope.activeTask.work_list.push({
-      "content":work.content,
-      "hour":work.hour,
-      "username":username,
-      "date":date,
-    });
-    $scope.newWorkModel.hide();
-
-    // Inefficient, but save all the projects// Inefficient, but save all the projects
-    work.content = "";
-    work.hour = "";
-    work.username = "";
-    work.date = "";
-  }
-
-  // Create our modal
-  // new task
-  $ionicModal.fromTemplateUrl('new-task.html', function(modal) {
-    $scope.taskModal = modal;
-  }, {
-    scope: $scope
-  });
-
     // task detail
   $ionicModal.fromTemplateUrl('task-detail.html', function(modal) {
     $scope.taskDetailModal = modal;
   }, {
     scope: $scope
   });
-
-  //new work
-  $ionicModal.fromTemplateUrl('new-work.html', function(modal) {
-    $scope.newWorkModel = modal;
-  }, {
-    scope: $scope
-  });
-
-  // Try to create the first project, make sure to defer
-  // this by using $timeout so everything is initialized
-  // properly
-//  $timeout(function() {
-//    if($scope.projects.length == 0) {
-//      while(true) {
-//        var projectTitle = prompt('Your first project title:');
-//        if(projectTitle) {
-//          createProject(projectTitle);
-//          break;
-//        }
-//      }
-//    }
-//  });
 
 });
